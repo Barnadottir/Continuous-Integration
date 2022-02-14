@@ -1,11 +1,20 @@
-import { execSync } from 'child_process';
-import path = require("path")
+import { exec, ExecSyncOptionsWithStringEncoding } from "child_process";
 
-// TODO: add logging here
-export const executeAndLogCommand = (command: string, commandOptions: number[], cwd = "") => {
-  execSync(command, {
-    stdio: commandOptions,
-    cwd: path.resolve(__dirname, cwd),
+export const execute = async (
+  cmd: string,
+  options: ExecSyncOptionsWithStringEncoding,
+  logger = console
+) => {
+  const child = exec(cmd, options, (err, stdout, stderr) => {
+    if (err) {
+      logger.error(`error: ${err}`);
+      throw err;
+    }
+    logger.log(`stdout: ${stdout}`);
+    logger.log(`stderr: ${stderr}`);
   });
-  console.log(`done: ${command}`);
-}
+
+  await new Promise((resolve) => {
+    child.on("close", resolve);
+  });
+};
